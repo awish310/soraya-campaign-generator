@@ -2,10 +2,12 @@ import { TriangleAlert, PhoneCall } from 'lucide-react';
 import { type RefObject } from 'react';
 import {
   HATS,
+  MESSAGE_LANGUAGES,
   PLATFORMS,
   RECIPIENT_GENDERS,
   SENDER_GENDER_OPTIONS,
   type HatValue,
+  type MessageLanguage,
   type PlatformValue,
   type RecipientGender,
   type SenderGender,
@@ -37,6 +39,10 @@ export interface CampaignFormProps {
   extraContext: string;
   onExtraContextChange: (value: string) => void;
   extraContextRef: RefObject<HTMLTextAreaElement | null>;
+  personalConnection: string;
+  onPersonalConnectionChange: (value: string) => void;
+  messageLanguage: MessageLanguage;
+  onMessageLanguageChange: (value: MessageLanguage) => void;
 }
 
 export function CampaignForm({
@@ -57,6 +63,10 @@ export function CampaignForm({
   extraContext,
   onExtraContextChange,
   extraContextRef,
+  personalConnection,
+  onPersonalConnectionChange,
+  messageLanguage,
+  onMessageLanguageChange,
 }: CampaignFormProps) {
   const platformMeta = PLATFORMS.find((p) => p.value === platform);
   const isPersonal = !!platformMeta?.isPersonal;
@@ -65,95 +75,130 @@ export function CampaignForm({
   return (
     <>
       <Card>
-        <div className="flex flex-col sm:flex-row gap-2 sm:items-end">
-          <div className="flex-1 min-w-0">
-            <p className="text-xs text-sage-700 mb-1.5">
-              קישור התרומה (Givechak) <span className="text-terracotta-600">*</span>
+        <p className="text-xs text-sage-700 mb-1.5">
+          קישור התרומה (Givechak) <span className="text-terracotta-600">*</span>
+        </p>
+        <input
+          type="url"
+          dir="ltr"
+          required
+          value={link}
+          onChange={(e) => onLinkChange(e.target.value)}
+          placeholder="https://www.jgive.com/new/he/ils/..."
+          aria-label="קישור התרומה האישי"
+          aria-invalid={!link.trim()}
+          className={`w-full px-3 py-2 rounded-lg bg-cream-50 focus:ring-2 focus:ring-sage-200/60 outline-none transition text-left placeholder:text-sage-400 text-sm ${
+            !link.trim()
+              ? 'border-2 border-red-500 focus:border-red-600'
+              : 'border border-cream-200 focus:border-sage-500'
+          }`}
+        />
+      </Card>
+
+      <Card>
+        <div className="space-y-3">
+          <div>
+            <p className="text-sm font-bold text-forest-700 mb-1">הזהות שלך</p>
+            <p className="text-xs text-sage-600 mb-2">
+              המגדר, הכובע וההקשר האישי שלך - שמורים בדפדפן ולא צריך למלא שוב.
             </p>
-            <input
-              type="url"
-              dir="ltr"
-              required
-              value={link}
-              onChange={(e) => onLinkChange(e.target.value)}
-              placeholder="https://www.jgive.com/new/he/ils/..."
-              aria-label="קישור התרומה האישי"
-              aria-invalid={!link.trim()}
-              className={`w-full px-3 py-2 rounded-lg bg-cream-50 focus:ring-2 focus:ring-sage-200/60 outline-none transition text-left placeholder:text-sage-400 text-sm ${
-                !link.trim()
-                  ? 'border-2 border-red-500 focus:border-red-600'
-                  : 'border border-cream-200 focus:border-sage-500'
-              }`}
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
+            <div className="sm:w-72 shrink-0">
+              <p className="text-xs text-sage-700 mb-1.5">
+                המגדר שלך <span className="text-terracotta-600">*</span>
+              </p>
+              <div
+                role="radiogroup"
+                aria-label="המגדר שלך"
+                aria-required="true"
+                aria-invalid={senderGender === 'unspecified'}
+                className={`grid grid-cols-2 gap-1 rounded-lg ${
+                  senderGender === 'unspecified'
+                    ? 'ring-2 ring-red-500'
+                    : ''
+                }`}
+              >
+                {SENDER_GENDER_OPTIONS.map((g) => (
+                  <button
+                    key={g.value}
+                    type="button"
+                    role="radio"
+                    aria-checked={senderGender === g.value}
+                    onClick={() => onSenderGenderChange(g.value)}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition border ${
+                      senderGender === g.value
+                        ? 'bg-forest-800 text-cream-50 border-forest-800'
+                        : 'bg-cream-50 text-forest-800 border-cream-200 hover:border-sage-400'
+                    }`}
+                  >
+                    {g.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-sage-700 mb-1.5">הכובע שלך</p>
+              <select
+                value={hat}
+                onChange={(e) => onHatChange(e.target.value as HatValue)}
+                aria-label="הכובע שלך"
+                className="w-full px-3 py-2 rounded-lg bg-cream-50 border border-cream-200 focus:border-sage-500 focus:ring-2 focus:ring-sage-200/60 outline-none transition text-sm"
+              >
+                {HATS.map((h) => (
+                  <option key={h.value} value={h.value}>
+                    {h.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div>
+            <p className="text-xs text-sage-700 mb-1.5">
+              ההקשר האישי שלך לקמפיין (חופשי)
+            </p>
+            <textarea
+              value={personalConnection}
+              onChange={(e) => onPersonalConnectionChange(e.target.value)}
+              placeholder="לדוגמה: אני חברת ילדות של סופי / רונן היה המפקד שלי בצבא / היכרתי את מירב בטיול בהודו לפני 10 שנים / אני לוחם שהיה בסוראיה וחשוב לי לתמוך ולעזור עד כמה שאפשר..."
+              rows={3}
+              className="w-full px-4 py-3 rounded-xl bg-cream-50 border border-cream-200 focus:border-sage-500 focus:ring-2 focus:ring-sage-200/60 outline-none transition resize-y placeholder:text-sage-400 leading-relaxed"
             />
           </div>
-          <div className="sm:w-32 shrink-0">
-            <p className="text-xs text-sage-700 mb-1.5">
-              המגדר שלך <span className="text-terracotta-600">*</span>
-            </p>
+        </div>
+      </Card>
+
+      <Card>
+        <div className="flex items-end justify-between gap-3 mb-3 flex-wrap">
+          <div className="sm:w-44 shrink-0 mb-2">
+            <h2 className="text-sm font-bold text-forest-800 mb-1">שפת המסר</h2>
             <div
               role="radiogroup"
-              aria-label="המגדר שלך"
-              aria-required="true"
-              aria-invalid={senderGender === 'unspecified'}
-              className={`grid grid-cols-2 gap-1 rounded-lg ${
-                senderGender === 'unspecified'
-                  ? 'ring-2 ring-red-500'
-                  : ''
-              }`}
+              aria-label="שפת המסר"
+              className="grid grid-cols-2 gap-1 rounded-lg"
             >
-              {SENDER_GENDER_OPTIONS.map((g) => (
+              {MESSAGE_LANGUAGES.map((lang) => (
                 <button
-                  key={g.value}
+                  key={lang.value}
                   type="button"
                   role="radio"
-                  aria-checked={senderGender === g.value}
-                  onClick={() => onSenderGenderChange(g.value)}
-                  className={`px-2 py-2 rounded-lg text-xs font-medium transition border ${
-                    senderGender === g.value
+                  aria-checked={messageLanguage === lang.value}
+                  onClick={() => onMessageLanguageChange(lang.value)}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition border ${
+                    messageLanguage === lang.value
                       ? 'bg-forest-800 text-cream-50 border-forest-800'
                       : 'bg-cream-50 text-forest-800 border-cream-200 hover:border-sage-400'
                   }`}
                 >
-                  {g.label}
+                  {lang.label}
                 </button>
               ))}
             </div>
           </div>
         </div>
-      </Card>
-
-      <Card>
-        <Label hint="הזהות שממנה אתה מדבר - משפיעה על נימת המסר">
-          איזה ״כובע״ אתה חובש?
-        </Label>
-        <div
-          role="radiogroup"
-          aria-label="כובע השגריר"
-          className="grid grid-cols-1 sm:grid-cols-2 gap-2"
-        >
-          {HATS.map((h) => (
-            <button
-              key={h.value}
-              type="button"
-              role="radio"
-              aria-checked={hat === h.value}
-              onClick={() => onHatChange(h.value)}
-              className={`px-3 py-3 rounded-xl text-sm font-medium transition border-2 text-right ${
-                hat === h.value
-                  ? 'bg-forest-800 text-cream-50 border-forest-800 shadow-sm'
-                  : 'bg-cream-50 text-forest-800 border-cream-200 hover:border-sage-400 hover:bg-sage-50/60'
-              }`}
-            >
-              {h.label}
-            </button>
-          ))}
-        </div>
-      </Card>
-
-      <Card>
-        <Label hint="בחר את הפלטפורמה שעליה תפיץ את המסר">
-          איפה תפיץ את המסר?
-        </Label>
+          <Label hint="בחר את הפלטפורמה שעליה תפיץ את המסר">
+            איפה תפיץ את המסר?
+          </Label>
         <div className="grid grid-cols-2 gap-2">
           {PLATFORMS.map((p) => (
             <button
@@ -185,7 +230,7 @@ export function CampaignForm({
       </Card>
 
       {isPersonal && (
-        <Card accent>
+        <Card>
           <Label hint="מסר אישי תמיד עובד יותר טוב">פרסונליזציה</Label>
           <div className="space-y-3">
             <div>
@@ -195,7 +240,7 @@ export function CampaignForm({
                 value={name}
                 onChange={(e) => onNameChange(e.target.value)}
                 placeholder="לדוגמה: דנה"
-                className="w-full px-4 py-3 rounded-xl bg-white border border-cream-200 focus:border-sage-500 focus:ring-2 focus:ring-sage-200/60 outline-none transition placeholder:text-sage-400"
+                className="w-full px-4 py-3 rounded-xl bg-cream-50 border border-cream-200 focus:border-sage-500 focus:ring-2 focus:ring-sage-200/60 outline-none transition placeholder:text-sage-400"
               />
             </div>
             <div>
@@ -214,7 +259,7 @@ export function CampaignForm({
                     className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium border-2 transition ${
                       recipientGender === g.value
                         ? 'bg-forest-800 text-cream-50 border-forest-800'
-                        : 'bg-white text-forest-800 border-cream-200 hover:border-sage-400'
+                        : 'bg-cream-50 text-forest-800 border-cream-200 hover:border-sage-400'
                     }`}
                   >
                     {g.label}
@@ -229,7 +274,7 @@ export function CampaignForm({
                 value={smallTalk}
                 onChange={(e) => onSmallTalkChange(e.target.value)}
                 placeholder="לדוגמה: הרבה זמן לא דיברנו"
-                className="w-full px-4 py-3 rounded-xl bg-white border border-cream-200 focus:border-sage-500 focus:ring-2 focus:ring-sage-200/60 outline-none transition placeholder:text-sage-400"
+                className="w-full px-4 py-3 rounded-xl bg-cream-50 border border-cream-200 focus:border-sage-500 focus:ring-2 focus:ring-sage-200/60 outline-none transition placeholder:text-sage-400"
               />
               <div className="flex flex-wrap gap-1.5 mt-2">
                 {SMALL_TALK_PRESETS.map((preset) => (
@@ -249,14 +294,14 @@ export function CampaignForm({
       )}
 
       <Card>
-        <Label hint="פרטים אישיים, אנקדוטות או דגשים שיעזרו ל-AI לכתוב מסר אותנטי יותר">
-          הקשר נוסף (חופשי)
+        <Label hint="פרטים על הנמען הספציפי או דגשים נקודתיים למסר הזה - לא הקשר קבוע שלך, אלא משהו שיעזור למסר הזה.">
+          פרטים על הנמען / על המסר (חופשי)
         </Label>
         <textarea
           ref={extraContextRef}
           value={extraContext}
           onChange={(e) => onExtraContextChange(e.target.value)}
-          placeholder="לדוגמה: אנחנו חברים מהצבא, גרים עכשיו בצפון; דנה מנהלת קרן צדקה; אני מכיר את רונן ומירב מהאוניברסיטה..."
+          placeholder="לדוגמה: דנה מנהלת קרן צדקה; הוא תרם בעבר ואני רוצה להזכיר את זה; היא דווקא תיכנס יותר מהקשר משפחתי..."
           rows={3}
           className="w-full px-4 py-3 rounded-xl bg-cream-50 border border-cream-200 focus:border-sage-500 focus:ring-2 focus:ring-sage-200/60 outline-none transition resize-y placeholder:text-sage-400 leading-relaxed"
         />

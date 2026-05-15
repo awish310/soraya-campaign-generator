@@ -5,14 +5,21 @@ import {
   HATS,
   PLATFORMS,
   type HatValue,
+  type MessageLanguage,
   type PlatformValue,
   type RecipientGender,
   type SenderGender,
 } from '@/lib/persona';
 import {
+  persistHat,
   persistLink,
+  persistMessageLanguage,
+  persistPersonalConnection,
   persistSenderGender,
+  readSavedHat,
   readSavedLink,
+  readSavedMessageLanguage,
+  readSavedPersonalConnection,
   readSavedSenderGender,
 } from '@/lib/storage';
 import { Header } from '@/components/Header';
@@ -49,6 +56,8 @@ export default function Page() {
     useState<RecipientGender>('unspecified');
   const [smallTalk, setSmallTalk] = useState('');
   const [extraContext, setExtraContext] = useState('');
+  const [personalConnection, setPersonalConnection] = useState('');
+  const [messageLanguage, setMessageLanguage] = useState<MessageLanguage>('he');
 
   const [generated, setGenerated] = useState('');
   const [loading, setLoading] = useState(false);
@@ -64,6 +73,12 @@ export default function Page() {
     if (savedLink) setLink(savedLink);
     const savedGender = readSavedSenderGender();
     if (savedGender) setSenderGender(savedGender);
+    const savedHat = readSavedHat();
+    if (savedHat) setHat(savedHat);
+    const savedConnection = readSavedPersonalConnection();
+    if (savedConnection) setPersonalConnection(savedConnection);
+    const savedLanguage = readSavedMessageLanguage();
+    if (savedLanguage) setMessageLanguage(savedLanguage);
   }, []);
 
   const platformMeta = PLATFORMS.find((p) => p.value === platform);
@@ -97,6 +112,21 @@ export default function Page() {
     persistSenderGender(value === 'unspecified' ? null : value);
   };
 
+  const handleHatChange = (value: HatValue) => {
+    setHat(value);
+    persistHat(value);
+  };
+
+  const handlePersonalConnectionChange = (value: string) => {
+    setPersonalConnection(value);
+    persistPersonalConnection(value);
+  };
+
+  const handleMessageLanguageChange = (value: MessageLanguage) => {
+    setMessageLanguage(value);
+    persistMessageLanguage(value);
+  };
+
 const handleGenerate = async () => {
     setError('');
     if (!link.trim()) {
@@ -122,6 +152,8 @@ const handleGenerate = async () => {
           recipientGender,
           smallTalk: smallTalk.trim(),
           extraContext: extraContext.trim(),
+          personalConnection: personalConnection.trim(),
+          messageLanguage,
         }),
       });
       const data = (await resp.json()) as GenerateResponse | GenerateError;
@@ -185,7 +217,7 @@ const handleGenerate = async () => {
           senderGender={senderGender}
           onSenderGenderChange={handleSenderGenderChange}
           hat={hat}
-          onHatChange={setHat}
+          onHatChange={handleHatChange}
           platform={platform}
           onPlatformChange={setPlatform}
           name={name}
@@ -196,6 +228,10 @@ const handleGenerate = async () => {
           onSmallTalkChange={setSmallTalk}
           extraContext={extraContext}
           onExtraContextChange={setExtraContext}
+          personalConnection={personalConnection}
+          onPersonalConnectionChange={handlePersonalConnectionChange}
+          messageLanguage={messageLanguage}
+          onMessageLanguageChange={handleMessageLanguageChange}
           extraContextRef={extraContextRef}
         />
 
