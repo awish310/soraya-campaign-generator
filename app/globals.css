@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-rubik), 'Heebo', system-ui, -apple-system, sans-serif;
+  background-color: #fbf8f1;
+  background-image:
+    radial-gradient(circle at 0% 0%, rgba(42, 59, 39, 0.06) 0%, transparent 45%),
+    radial-gradient(circle at 100% 100%, rgba(197, 140, 110, 0.08) 0%, transparent 40%);
+  background-attachment: fixed;
+  color: #1f2c1d;
+}
+
+textarea,
+input,
+select,
+button {
+  font-family: inherit;
+}
+
+select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B705C' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left 0.75rem center;
+  background-size: 1.1rem;
+  -webkit-appearance: none;
+  appearance: none;
+  padding-left: 2.5rem;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 14px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.toast-enter {
+  animation: fade-in-up 0.22s ease-out;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+.dot-1 { animation: pulse-dot 1.2s ease-in-out infinite; }
+.dot-2 { animation: pulse-dot 1.2s ease-in-out 0.15s infinite; }
+.dot-3 { animation: pulse-dot 1.2s ease-in-out 0.3s infinite; }
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.25s ease-out;
+}
+
+.animate-rise-in {
+  animation: rise-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
