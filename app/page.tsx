@@ -7,8 +7,14 @@ import {
   type HatValue,
   type PlatformValue,
   type RecipientGender,
+  type SenderGender,
 } from '@/lib/persona';
-import { persistLink, readSavedLink } from '@/lib/storage';
+import {
+  persistLink,
+  persistSenderGender,
+  readSavedLink,
+  readSavedSenderGender,
+} from '@/lib/storage';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { ReelsSection } from '@/components/ReelsSection';
@@ -16,6 +22,7 @@ import { CampaignForm } from '@/components/CampaignForm';
 import { ResultCard } from '@/components/ResultCard';
 import { Toast } from '@/components/Toast';
 import { OnboardingModal } from '@/components/OnboardingModal';
+import { CopyReviewModal, type CopyReviewAction } from '@/components/CopyReviewModal';
 import { FacebookShareTip } from '@/components/FacebookShareTip';
 
 interface GenerateResponse {
@@ -34,6 +41,7 @@ interface GenerateError {
 
 export default function Page() {
   const [link, setLink] = useState('');
+  const [senderGender, setSenderGender] = useState<SenderGender>('unspecified');
   const [hat, setHat] = useState<HatValue>(HATS[0].value);
   const [platform, setPlatform] = useState<PlatformValue>(PLATFORMS[0].value);
   const [name, setName] = useState('');
@@ -47,12 +55,15 @@ export default function Page() {
   const [error, setError] = useState('');
   const [toast, setToast] = useState('');
   const [onboardingOpen, setOnboardingOpen] = useState(true);
+  const [pendingAction, setPendingAction] = useState<CopyReviewAction | null>(null);
 
   const extraContextRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    const saved = readSavedLink();
-    if (saved) setLink(saved);
+    const savedLink = readSavedLink();
+    if (savedLink) setLink(savedLink);
+    const savedGender = readSavedSenderGender();
+    if (savedGender) setSenderGender(savedGender);
   }, []);
 
   const platformMeta = PLATFORMS.find((p) => p.value === platform);
@@ -81,10 +92,19 @@ export default function Page() {
     persistLink(value.trim());
   };
 
+  const handleSenderGenderChange = (value: SenderGender) => {
+    setSenderGender(value);
+    persistSenderGender(value === 'unspecified' ? null : value);
+  };
+
 const handleGenerate = async () => {
     setError('');
     if (!link.trim()) {
       setError('יש להזין את קישור התרומה האישי לפני יצירת המסר.');
+      return;
+    }
+    if (senderGender === 'unspecified') {
+      setError('יש לבחור את המגדר שלך (גבר/אישה) לפני יצירת המסר.');
       return;
     }
     setLoading(true);
@@ -97,6 +117,7 @@ const handleGenerate = async () => {
           hat,
           platform,
           link: link.trim(),
+          senderGender,
           name: name.trim(),
           recipientGender,
           smallTalk: smallTalk.trim(),
@@ -116,20 +137,41 @@ const handleGenerate = async () => {
     }
   };
 
-  const handleCopy = async () => {
+  const handleCopy = () => {
     if (!generated) return;
-    try {
-      await navigator.clipboard.writeText(generated);
-      flash('הטקסט הועתק ללוח');
-    } catch {
-      flash('לא הצלחנו להעתיק. נסו ידנית.');
-    }
+    setPendingAction('copy');
   };
 
   const handleWhatsApp = () => {
     if (!generated) return;
-    const encoded = encodeURIComponent(generated);
-    window.open(`https://wa.me/?text=${encoded}`, '_blank', 'noopener,noreferrer');
+    setPendingAction('whatsapp');
+  };
+
+  const handleReviewConfirm = async () => {
+    if (!generated || !pendingAction) {
+      setPendingAction(null);
+      return;
+    }
+    if (pendingAction === 'copy') {
+      try {
+        await navigator.clipboard.writeText(generated);
+        flash('הטקסט הועתק ללוח');
+      } catch {
+        flash('לא הצלחנו להעתיק. נסו ידנית.');
+      }
+    } else if (pendingAction === 'whatsapp') {
+      const encoded = encodeURIComponent(generated);
+      window.open(
+        `https://wa.me/?text=${encoded}`,
+        '_blank',
+        'noopener,noreferrer',
+      );
+    }
+    setPendingAction(null);
+  };
+
+  const handleReviewCancel = () => {
+    setPendingAction(null);
   };
 
   return (
@@ -140,6 +182,8 @@ const handleGenerate = async () => {
         <CampaignForm
           link={link}
           onLinkChange={handleLinkChange}
+          senderGender={senderGender}
+          onSenderGenderChange={handleSenderGenderChange}
           hat={hat}
           onHatChange={setHat}
           platform={platform}
@@ -179,6 +223,13 @@ const handleGenerate = async () => {
       <OnboardingModal
         open={onboardingOpen}
         onClose={() => setOnboardingOpen(false)}
+      />
+
+      <CopyReviewModal
+        open={pendingAction !== null}
+        action={pendingAction ?? 'copy'}
+        onConfirm={handleReviewConfirm}
+        onClose={handleReviewCancel}
       />
     </div>
   );

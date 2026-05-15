@@ -5,9 +5,11 @@ import {
   isHat,
   isPlatform,
   isRecipientGender,
+  isSenderGender,
   type HatValue,
   type PlatformValue,
   type RecipientGender,
+  type SenderGender,
 } from '@/lib/persona';
 
 export const runtime = 'nodejs';
@@ -17,6 +19,7 @@ interface GenerateRequest {
   hat: HatValue;
   platform: PlatformValue;
   link: string;
+  senderGender: SenderGender;
   name?: string;
   recipientGender?: RecipientGender;
   smallTalk?: string;
@@ -46,6 +49,7 @@ export async function POST(request: Request) {
     hat: parsed.hat,
     platform: parsed.platform,
     link: parsed.link,
+    senderGender: parsed.senderGender,
     name: parsed.name ?? '',
     recipientGender: parsed.recipientGender ?? 'unspecified',
     smallTalk: parsed.smallTalk ?? '',
@@ -75,7 +79,10 @@ export async function POST(request: Request) {
       .filter((block): block is Anthropic.TextBlock => block.type === 'text')
       .map((block) => block.text)
       .join('\n')
-      .trim();
+      .trim()
+      // Belt-and-suspenders: strip em/en dashes that signal AI-generated text.
+      // The system prompt forbids these; this guarantees they never leak.
+      .replace(/[—–]/g, '-');
 
     if (!text) {
       return NextResponse.json(
@@ -141,10 +148,15 @@ function parseBody(body: unknown): ParseResult {
     return { error: 'יש להזין את קישור התרומה האישי.' };
   }
 
+  if (!isSenderGender(b.senderGender) || b.senderGender === 'unspecified') {
+    return { error: 'יש לבחור את המגדר שלך (גבר/אישה).' };
+  }
+
   return {
     hat: b.hat,
     platform: b.platform,
     link,
+    senderGender: b.senderGender,
     name: typeof b.name === 'string' ? b.name.trim() : undefined,
     recipientGender: isRecipientGender(b.recipientGender)
       ? b.recipientGender

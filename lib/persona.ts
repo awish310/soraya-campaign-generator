@@ -1,6 +1,8 @@
 export type HatValue =
-  | 'shai-sofi'
   | 'founders'
+  | 'founders-self'
+  | 'shai-sofi'
+  | 'shai-sofi-self'
   | 'fighter'
   | 'family'
   | 'general';
@@ -33,9 +35,23 @@ export const HATS: Hat[] = [
     voice: `אתה כותב/ת בשם שגריר/ה שהוא חבר/ה אישי/ת של רונן ומירב, מייסדי מרכז סוראיה. את/ה מכיר/ה אותם אישית, ראית את המסירות והעבודה שלהם מקרוב. הטון: מכבד, אישי, נוגע. מדגיש/ה שזו עבודת חיים אמיתית של אנשים שאת/ה אוהב/ת ומעריך/ה.`,
   },
   {
+    value: 'founders-self',
+    label: 'אני רונן או מירב',
+    voice: `אתה כותב/ת בגוף ראשון, מנקודת המבט של רונן או מירב - מייסדי ובעלי מרכז סוראיה. הקמתם את המקום בשליחות מלאה, אתם בעצמכם מטפלים, בניתם אותו במו ידיכם, ועושים כל מה שאפשר כדי שללוחמים יהיה הכי טוב. אתם אנשים צנועים שמאמינים שהכל אפשרי, ושייכים למקום הזה ברמה הכי עמוקה - הוא הבית שלכם, הלוחמים הם המשפחה.
+
+הטון: אישי, ענוותני, מבוסס. לא "הקמתי דבר גדול" אלא "יש עבודה, אנחנו עושים אותה". דבר/י מהמקום של מי שיודע מבפנים מה הכי חשוב לעשות. השתמש/י בלשון שייכות עמוקה: "אנחנו בנינו", "המטופלים שלנו", "הבית שלנו". הימנע/י משבחים עצמיים ומכל תחושה של גנדור - תן/י לעבודה לדבר. הצניעות והשליחות הן עצמן המסר.`,
+  },
+  {
     value: 'shai-sofi',
     label: 'קרוב של שי וסופי',
     voice: `אתה כותב/ת בשם שגריר/ה שהוא חבר/ה אישי/ת של שי וסופי, זוג ישראלי שרתם את הסביבה הקרובה שלהם לקמפיין של מרכז סוראיה. הטון: חברי, חם, אישי. מזכיר/ה את שי וסופי בשם, כי הקשר אליהם הוא הסיבה שאת/ה כותב/ת. לא רשמי. כמו לדבר עם חברים.`,
+  },
+  {
+    value: 'shai-sofi-self',
+    label: 'אני שי או סופי',
+    voice: `אתה כותב/ת בגוף ראשון, מנקודת המבט של שי או סופי. אתם מנהלים את מרכז סוראיה בחצי השנה האחרונה ונחשפים יום-יום ללוחמים שמגיעים ולתהליך המדהים שהם עוברים. אתם אבא ואמא של המקום, והעבודה הזו היא זכות גדולה עבורכם - לא חובה, לא משימה, זכות.
+
+הטון: חם, נוכח, מעורב רגשית בלי להיות דרמטי. דבר/י מתוך החוויה היומיומית - מה את/ה רואה במו עיניך, מה משנה אותך, מה גורם לך להתאהב במקום הזה כל יום מחדש. דוגמאות לפתיחים מתאימים: "מאז שאנחנו כאן...", "אני רואה כל יום...", "בחצי השנה האחרונה ראיתי דברים שלא חשבתי שאפשר...". ספר/י על הצד האנושי שאת/ה חווה מקרוב - לא רטוריקה ולא הצהרות גדולות, רק עדות אישית מהשטח. הזכרת המילה "זכות" טבעית כאן.`,
   },
   {
     value: 'fighter',
@@ -122,5 +138,22 @@ export const RECIPIENT_GENDERS: Array<{ value: RecipientGender; label: string }>
 ];
 
 export function isRecipientGender(value: unknown): value is RecipientGender {
+  return value === 'male' || value === 'female' || value === 'unspecified';
+}
+
+// The ambassador (sender) gender. Affects first-person forms in the message
+// ("נרתם" vs "נרתמת", "מאמין" vs "מאמינה"). `unspecified` is the empty initial
+// state — the form requires a real selection before allowing generation.
+export type SenderGender = 'male' | 'female' | 'unspecified';
+
+export const SENDER_GENDER_OPTIONS: Array<{
+  value: Exclude<SenderGender, 'unspecified'>;
+  label: string;
+}> = [
+  { value: 'male', label: 'גבר' },
+  { value: 'female', label: 'אישה' },
+];
+
+export function isSenderGender(value: unknown): value is SenderGender {
   return value === 'male' || value === 'female' || value === 'unspecified';
 }

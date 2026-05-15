@@ -4,9 +4,11 @@ import {
   HATS,
   PLATFORMS,
   RECIPIENT_GENDERS,
+  SENDER_GENDER_OPTIONS,
   type HatValue,
   type PlatformValue,
   type RecipientGender,
+  type SenderGender,
 } from '@/lib/persona';
 import { Card, Label } from './ui';
 
@@ -20,6 +22,8 @@ const SMALL_TALK_PRESETS = [
 export interface CampaignFormProps {
   link: string;
   onLinkChange: (value: string) => void;
+  senderGender: SenderGender;
+  onSenderGenderChange: (value: SenderGender) => void;
   hat: HatValue;
   onHatChange: (value: HatValue) => void;
   platform: PlatformValue;
@@ -38,6 +42,8 @@ export interface CampaignFormProps {
 export function CampaignForm({
   link,
   onLinkChange,
+  senderGender,
+  onSenderGenderChange,
   hat,
   onHatChange,
   platform,
@@ -59,17 +65,61 @@ export function CampaignForm({
   return (
     <>
       <Card>
-        <Label hint="הקישור האישי שאליו מפנים תורמים">
-          קישור התרומה שלך (Givechak)
-        </Label>
-        <input
-          type="url"
-          dir="ltr"
-          value={link}
-          onChange={(e) => onLinkChange(e.target.value)}
-          placeholder="https://www.jgive.com/new/he/ils/..."
-          className="w-full px-4 py-3 rounded-xl bg-cream-50 border border-cream-200 focus:border-sage-500 focus:ring-2 focus:ring-sage-200/60 outline-none transition text-left placeholder:text-sage-400"
-        />
+        <div className="flex flex-col sm:flex-row gap-2 sm:items-end">
+          <div className="flex-1 min-w-0">
+            <p className="text-xs text-sage-700 mb-1.5">
+              קישור התרומה (Givechak) <span className="text-terracotta-600">*</span>
+            </p>
+            <input
+              type="url"
+              dir="ltr"
+              required
+              value={link}
+              onChange={(e) => onLinkChange(e.target.value)}
+              placeholder="https://www.jgive.com/new/he/ils/..."
+              aria-label="קישור התרומה האישי"
+              aria-invalid={!link.trim()}
+              className={`w-full px-3 py-2 rounded-lg bg-cream-50 focus:ring-2 focus:ring-sage-200/60 outline-none transition text-left placeholder:text-sage-400 text-sm ${
+                !link.trim()
+                  ? 'border-2 border-red-500 focus:border-red-600'
+                  : 'border border-cream-200 focus:border-sage-500'
+              }`}
+            />
+          </div>
+          <div className="sm:w-32 shrink-0">
+            <p className="text-xs text-sage-700 mb-1.5">
+              המגדר שלך <span className="text-terracotta-600">*</span>
+            </p>
+            <div
+              role="radiogroup"
+              aria-label="המגדר שלך"
+              aria-required="true"
+              aria-invalid={senderGender === 'unspecified'}
+              className={`grid grid-cols-2 gap-1 rounded-lg ${
+                senderGender === 'unspecified'
+                  ? 'ring-2 ring-red-500'
+                  : ''
+              }`}
+            >
+              {SENDER_GENDER_OPTIONS.map((g) => (
+                <button
+                  key={g.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={senderGender === g.value}
+                  onClick={() => onSenderGenderChange(g.value)}
+                  className={`px-2 py-2 rounded-lg text-xs font-medium transition border ${
+                    senderGender === g.value
+                      ? 'bg-forest-800 text-cream-50 border-forest-800'
+                      : 'bg-cream-50 text-forest-800 border-cream-200 hover:border-sage-400'
+                  }`}
+                >
+                  {g.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
       </Card>
 
       <Card>
