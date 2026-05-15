@@ -157,3 +157,15 @@ export const SENDER_GENDER_OPTIONS: Array<{
 export function isSenderGender(value: unknown): value is SenderGender {
   return value === 'male' || value === 'female' || value === 'unspecified';
 }
+
+// Language the generated message is written in.
+export type MessageLanguage = 'he' | 'en';
+
+export const MESSAGE_LANGUAGES: Array<{ value: MessageLanguage; label: string }> = [
+  { value: 'he', label: 'עברית' },
+  { value: 'en', label: 'English' },
+];
+
+export function isMessageLanguage(value: unknown): value is MessageLanguage {
+  return value === 'he' || value === 'en';
+}

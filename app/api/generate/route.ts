@@ -3,10 +3,12 @@ import { NextResponse } from 'next/server';
 import { SYSTEM_PROMPT } from '@/lib/system-prompt';
 import {
   isHat,
+  isMessageLanguage,
   isPlatform,
   isRecipientGender,
   isSenderGender,
   type HatValue,
+  type MessageLanguage,
   type PlatformValue,
   type RecipientGender,
   type SenderGender,
@@ -20,10 +22,12 @@ interface GenerateRequest {
   platform: PlatformValue;
   link: string;
   senderGender: SenderGender;
+  messageLanguage: MessageLanguage;
   name?: string;
   recipientGender?: RecipientGender;
   smallTalk?: string;
   extraContext?: string;
+  personalConnection?: string;
 }
 
 let clientInstance: Anthropic | null = null;
@@ -50,9 +54,11 @@ export async function POST(request: Request) {
     platform: parsed.platform,
     link: parsed.link,
     senderGender: parsed.senderGender,
+    messageLanguage: parsed.messageLanguage,
     name: parsed.name ?? '',
     recipientGender: parsed.recipientGender ?? 'unspecified',
     smallTalk: parsed.smallTalk ?? '',
+    personalConnection: parsed.personalConnection ?? '',
     extraContext: parsed.extraContext ?? '',
   };
 
@@ -152,11 +158,16 @@ function parseBody(body: unknown): ParseResult {
     return { error: 'יש לבחור את המגדר שלך (גבר/אישה).' };
   }
 
+  const messageLanguage: MessageLanguage = isMessageLanguage(b.messageLanguage)
+    ? b.messageLanguage
+    : 'he';
+
   return {
     hat: b.hat,
     platform: b.platform,
     link,
     senderGender: b.senderGender,
+    messageLanguage,
     name: typeof b.name === 'string' ? b.name.trim() : undefined,
     recipientGender: isRecipientGender(b.recipientGender)
       ? b.recipientGender
@@ -164,5 +175,9 @@ function parseBody(body: unknown): ParseResult {
     smallTalk: typeof b.smallTalk === 'string' ? b.smallTalk.trim() : undefined,
     extraContext:
       typeof b.extraContext === 'string' ? b.extraContext.trim() : undefined,
+    personalConnection:
+      typeof b.personalConnection === 'string'
+        ? b.personalConnection.trim()
+        : undefined,
   };
 }
