@@ -21,6 +21,12 @@ export const REELS: Reel[] = [
     source: 'facebook',
     title: 'ריל מרכז סוראיה',
   },
+  {
+    id: 'DYWmOoZIEkP',
+    url: 'https://www.instagram.com/reel/DYWmOoZIEkP/',
+    source: 'instagram',
+    title: 'ריל מרכז סוראיה',
+  },
 ];
 
 export function reelEmbedUrl(reel: Reel): string {
