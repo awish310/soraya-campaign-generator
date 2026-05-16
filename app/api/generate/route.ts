@@ -13,6 +13,7 @@ import {
   type RecipientGender,
   type SenderGender,
 } from '@/lib/persona';
+import { getKv, todayUtc, COUNTER_KEYS } from '@/lib/kv';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -95,6 +96,23 @@ export async function POST(request: Request) {
         { error: 'לא התקבל טקסט מהמודל. נסו שוב.' },
         { status: 502 },
       );
+    }
+
+    // Fire-and-forget: increment generation counters. KV errors are logged
+    // but never propagate to the user (a transient KV outage shouldn't
+    // block a successful generation from being returned).
+    const kv = getKv();
+    if (kv) {
+      const day = todayUtc();
+      Promise.all([
+        kv.incr(COUNTER_KEYS.total),
+        kv.incr(COUNTER_KEYS.day(day)),
+        kv.incr(COUNTER_KEYS.hat(parsed.hat)),
+        kv.incr(COUNTER_KEYS.platform(parsed.platform)),
+        kv.incr(COUNTER_KEYS.language(parsed.messageLanguage)),
+      ]).catch((err) => {
+        console.error('[generate] KV counter increment failed', err);
+      });
     }
 
     return NextResponse.json({

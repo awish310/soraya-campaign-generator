@@ -1,5 +1,5 @@
-import Image from 'next/image';
 import { BRAND_LINKS } from '@/lib/brand-links';
+import { LogoTapGate } from './LogoTapGate';
 
 export function Header() {
   return (
@@ -13,14 +13,7 @@ export function Header() {
       <div className="max-w-3xl mx-auto px-5 sm:px-6 py-7 sm:py-10 relative">
         <HeaderLinks />
         <div className="flex items-center gap-4 mb-3">
-          <Image
-            src="/soraya-logo.png"
-            alt="מרכז סוראיה"
-            width={76}
-            height={76}
-            priority
-            className="rounded-full shadow-md shrink-0 w-[64px] h-[64px] sm:w-[76px] sm:h-[76px]"
-          />
+          <LogoTapGate />
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-cream-50 leading-tight">
               מילים לנשום
