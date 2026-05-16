@@ -23,7 +23,7 @@ export function Header() {
           />
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-cream-50 leading-tight">
-              מחולל מסרים
+              מילים לנשום
             </h1>
             <p className="text-cream-200 text-sm sm:text-base mt-0.5">
               כלי השגרירים של מרכז סוראיה

@@ -10,9 +10,9 @@ const rubik = Rubik({
 });
 
 export const metadata: Metadata = {
-  title: 'מחולל מסרים · מרכז סוראיה',
+  title: 'מילים לנשום · מרכז סוראיה',
   description:
-    'כלי השגרירים של מרכז סוראיה - מחולל מסרים אישיים לקמפיין גיוס התרומות.',
+    'כלי השגרירים של מרכז סוראיה - מסרים אישיים לקמפיין גיוס התרומות.',
 };
 
 export const viewport: Viewport = {

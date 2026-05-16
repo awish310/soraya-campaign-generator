@@ -37,7 +37,7 @@ export function ResultCard({
         {loading ? (
           <>
             <Loader2 size={20} className="animate-spin" />
-            <span>מחולל מסר אישי...</span>
+            <span>כותב מסר אישי...</span>
           </>
         ) : (
           <>
